@@ -76,7 +76,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } 
       });
     } catch (error) {
-      res.status(400).json({ message: error.message });
+      res.status(400).json({ message: error instanceof Error ? error.message : 'Operation failed' });
     }
   });
 
@@ -106,7 +106,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } 
       });
     } catch (error) {
-      res.status(400).json({ message: error.message });
+      res.status(400).json({ message: error instanceof Error ? error.message : 'Operation failed' });
     }
   });
 
@@ -134,7 +134,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         language: user.language 
       });
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      res.status(500).json({ message: error instanceof Error ? error.message : 'Operation failed' });
     }
   });
 
@@ -181,7 +181,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ message: 'File uploaded successfully', reportId: report.id });
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      res.status(500).json({ message: error instanceof Error ? error.message : 'Operation failed' });
     }
   });
 
@@ -253,7 +253,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const reports = await storage.getUserReports(req.session.userId);
       res.json(reports);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      res.status(500).json({ message: error instanceof Error ? error.message : 'Operation failed' });
     }
   });
 
@@ -265,7 +265,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json(report);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      res.status(500).json({ message: error instanceof Error ? error.message : 'Operation failed' });
     }
   });
 
@@ -275,7 +275,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const medications = await storage.getUserMedications(req.session.userId);
       res.json(medications);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      res.status(500).json({ message: error instanceof Error ? error.message : 'Operation failed' });
     }
   });
 
@@ -284,7 +284,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const medications = await storage.getActiveMedications(req.session.userId);
       res.json(medications);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      res.status(500).json({ message: error instanceof Error ? error.message : 'Operation failed' });
     }
   });
 
@@ -298,7 +298,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const medication = await storage.createMedication(medicationData);
       res.json(medication);
     } catch (error) {
-      res.status(400).json({ message: error.message });
+      res.status(400).json({ message: error instanceof Error ? error.message : 'Operation failed' });
     }
   });
 
@@ -312,7 +312,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updatedMedication = await storage.updateMedication(req.params.id, req.body);
       res.json(updatedMedication);
     } catch (error) {
-      res.status(400).json({ message: error.message });
+      res.status(400).json({ message: error instanceof Error ? error.message : 'Operation failed' });
     }
   });
 
@@ -322,7 +322,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const reminders = await storage.getUserReminders(req.session.userId);
       res.json(reminders);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      res.status(500).json({ message: error instanceof Error ? error.message : 'Operation failed' });
     }
   });
 
@@ -331,7 +331,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const reminders = await storage.getActiveReminders(req.session.userId);
       res.json(reminders);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      res.status(500).json({ message: error instanceof Error ? error.message : 'Operation failed' });
     }
   });
 
@@ -345,7 +345,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const reminder = await storage.createReminder(reminderData);
       res.json(reminder);
     } catch (error) {
-      res.status(400).json({ message: error.message });
+      res.status(400).json({ message: error instanceof Error ? error.message : 'Operation failed' });
     }
   });
 
@@ -359,7 +359,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updatedReminder = await storage.updateReminder(req.params.id, req.body);
       res.json(updatedReminder);
     } catch (error) {
-      res.status(400).json({ message: error.message });
+      res.status(400).json({ message: error instanceof Error ? error.message : 'Operation failed' });
     }
   });
 
@@ -369,7 +369,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const timeline = await storage.getUserHealthTimeline(req.session.userId);
       res.json(timeline);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      res.status(500).json({ message: error instanceof Error ? error.message : 'Operation failed' });
     }
   });
 
@@ -391,7 +391,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         healthScore: `${healthScore}%`,
       });
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      res.status(500).json({ message: error instanceof Error ? error.message : 'Operation failed' });
     }
   });
 
@@ -406,7 +406,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const translatedText = await translateMedicalText(text, targetLanguage);
       res.json({ translatedText });
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      res.status(500).json({ message: error instanceof Error ? error.message : 'Operation failed' });
     }
   });
 
@@ -435,7 +435,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         expiresAt 
       });
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      res.status(500).json({ message: error instanceof Error ? error.message : 'Operation failed' });
     }
   });
 
@@ -476,7 +476,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         viewCount: sharedReport.viewCount + 1,
       });
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      res.status(500).json({ message: error instanceof Error ? error.message : 'Operation failed' });
     }
   });
 

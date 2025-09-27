@@ -71,8 +71,14 @@ export class MemStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
     const user: User = { 
-      ...insertUser, 
-      id, 
+      id,
+      email: insertUser.email,
+      password: insertUser.password,
+      firstName: insertUser.firstName,
+      lastName: insertUser.lastName,
+      dateOfBirth: insertUser.dateOfBirth || null,
+      phone: insertUser.phone || null,
+      language: insertUser.language || null,
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -102,9 +108,17 @@ export class MemStorage implements IStorage {
 
   async createReport(insertReport: InsertReport): Promise<Report> {
     const id = randomUUID();
-    const report: Report = { 
-      ...insertReport, 
-      id, 
+    const report: Report = {
+      id,
+      userId: insertReport.userId,
+      fileName: insertReport.fileName,
+      fileUrl: insertReport.fileUrl,
+      reportType: insertReport.reportType,
+      originalText: insertReport.originalText || null,
+      extractedData: insertReport.extractedData || null,
+      analysis: insertReport.analysis || null,
+      summary: insertReport.summary || null,
+      status: insertReport.status || null,
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -139,9 +153,18 @@ export class MemStorage implements IStorage {
 
   async createMedication(insertMedication: InsertMedication): Promise<Medication> {
     const id = randomUUID();
-    const medication: Medication = { 
-      ...insertMedication, 
-      id, 
+    const medication: Medication = {
+      id,
+      userId: insertMedication.userId,
+      reportId: insertMedication.reportId || null,
+      name: insertMedication.name,
+      dosage: insertMedication.dosage,
+      frequency: insertMedication.frequency,
+      instructions: insertMedication.instructions || null,
+      sideEffects: insertMedication.sideEffects || null,
+      isActive: insertMedication.isActive || null,
+      startDate: insertMedication.startDate || null,
+      endDate: insertMedication.endDate || null,
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -176,9 +199,16 @@ export class MemStorage implements IStorage {
 
   async createReminder(insertReminder: InsertReminder): Promise<Reminder> {
     const id = randomUUID();
-    const reminder: Reminder = { 
-      ...insertReminder, 
-      id, 
+    const reminder: Reminder = {
+      id,
+      userId: insertReminder.userId,
+      medicationId: insertReminder.medicationId || null,
+      type: insertReminder.type,
+      title: insertReminder.title,
+      message: insertReminder.message || null,
+      scheduledTime: insertReminder.scheduledTime,
+      isCompleted: insertReminder.isCompleted || null,
+      isActive: insertReminder.isActive || null,
       createdAt: new Date()
     };
     this.reminders.set(id, reminder);
@@ -203,9 +233,16 @@ export class MemStorage implements IStorage {
 
   async createHealthTimelineEntry(insertEntry: InsertHealthTimeline): Promise<HealthTimeline> {
     const id = randomUUID();
-    const entry: HealthTimeline = { 
-      ...insertEntry, 
-      id, 
+    const entry: HealthTimeline = {
+      id,
+      userId: insertEntry.userId,
+      reportId: insertEntry.reportId || null,
+      date: insertEntry.date,
+      eventType: insertEntry.eventType,
+      title: insertEntry.title,
+      description: insertEntry.description || null,
+      metrics: insertEntry.metrics || null,
+      notes: insertEntry.notes || null,
       createdAt: new Date()
     };
     this.healthTimeline.set(id, entry);
@@ -220,9 +257,15 @@ export class MemStorage implements IStorage {
 
   async createSharedReport(insertSharedReport: InsertSharedReport): Promise<SharedReport> {
     const id = randomUUID();
-    const sharedReport: SharedReport = { 
-      ...insertSharedReport, 
-      id, 
+    const sharedReport: SharedReport = {
+      id,
+      userId: insertSharedReport.userId,
+      reportIds: insertSharedReport.reportIds || null,
+      shareToken: insertSharedReport.shareToken,
+      doctorEmail: insertSharedReport.doctorEmail || null,
+      expiresAt: insertSharedReport.expiresAt,
+      isActive: insertSharedReport.isActive || null,
+      viewCount: insertSharedReport.viewCount || null,
       createdAt: new Date()
     };
     this.sharedReports.set(id, sharedReport);
