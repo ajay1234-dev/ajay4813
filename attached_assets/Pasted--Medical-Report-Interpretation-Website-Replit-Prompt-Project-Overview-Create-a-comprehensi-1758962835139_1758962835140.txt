@@ -1,0 +1,225 @@
+# Medical Report Interpretation Website - Replit Prompt
+
+## Project Overview
+Create a comprehensive medical report interpretation platform that transforms complex medical documents into patient-friendly explanations. The platform should be modern, accessible, and user-friendly with innovative features for healthcare management.
+
+## Tech Stack Requirements
+- **Frontend**: React with modern UI components (use Tailwind CSS or Material-UI)
+- **Backend**: Node.js/Express or Next.js
+- **Database & Auth**: Supabase for authentication and data storage
+- **OCR**: Tesseract.js or Google Vision API (free tier)
+- **Styling**: Responsive design with mobile-first approach
+- **Additional**: Chart.js or Recharts for data visualization
+
+## Core Features to Implement
+
+### 1. User Authentication System
+```
+- Clean, modern login/signup page
+- Email authentication + Google/Facebook OAuth
+- Supabase Auth integration
+- Secure user session management
+- Password reset functionality
+- User profile management
+```
+
+### 2. Document Upload Interface
+```
+- Drag-and-drop file upload area
+- Support for PDF, JPG, PNG formats
+- File preview before processing
+- Progress indicators during upload
+- OCR processing status display
+- Error handling for unsupported files
+```
+
+### 3. Report Analysis Dashboard
+```
+- Clean card-based layout for each report
+- Highlighted abnormal values with color coding
+- Plain language explanations section
+- Key metrics extraction (blood pressure, sugar levels, etc.)
+- Visual indicators for normal/abnormal ranges
+- Expandable sections for detailed information
+```
+
+### 4. Prescription Management Interface
+```
+- Medicine list with dosage information
+- Interactive pill schedule calendar
+- Medication reminder setup
+- Side effects information display
+- Generic drug alternatives
+- Refill reminder notifications
+```
+
+### 5. Health Timeline Visualization
+```
+- Interactive timeline with health data points
+- Chart visualizations for trend analysis
+- Filter options by date range and test type
+- Comparison view between different reports
+- Health progress indicators
+- Downloadable health summary reports
+```
+
+### 6. Accessibility Features Interface
+```
+- Language selection dropdown (multilingual support)
+- Text-to-speech button for report explanations
+- High contrast mode toggle
+- Font size adjustment controls
+- Voice navigation options
+- Keyboard navigation support
+```
+
+### 7. Smart Reminders System
+```
+- Medication reminder setup interface
+- Browser notification integration
+- Email reminder configuration
+- Refill alert system
+- Custom reminder scheduling
+- Snooze and dismiss options
+```
+
+### 8. Predictive Health Dashboard
+```
+- Health trend visualization charts
+- Risk assessment indicators
+- Preventive care recommendations
+- Health goal tracking
+- Progress monitoring widgets
+- Alert system for concerning trends
+```
+
+### 9. Doctor Sharing Interface
+```
+- Generate shareable health summary
+- PDF export functionality
+- Secure link sharing with expiration
+- Doctor portal access (basic)
+- Appointment scheduling integration
+- Emergency contact features
+```
+
+## UI/UX Design Requirements
+
+### Design Principles
+- **Clean & Modern**: Use white space effectively, modern typography
+- **Accessible**: WCAG 2.1 AA compliance, proper contrast ratios
+- **Mobile-First**: Responsive design for all screen sizes
+- **Intuitive**: Clear navigation, logical information hierarchy
+- **Trust-Building**: Professional medical aesthetic with security indicators
+
+### Color Scheme Suggestions
+```
+- Primary: Medical blue (#2563eb)
+- Secondary: Success green (#10b981)
+- Warning: Amber (#f59e0b)
+- Error: Red (#ef4444)
+- Background: Light gray (#f8fafc)
+- Text: Dark gray (#1f2937)
+```
+
+### Component Requirements
+```
+- Navigation bar with user avatar and logout
+- Sidebar for feature navigation
+- Card components for reports and medications
+- Modal dialogs for detailed views
+- Loading states and skeleton screens
+- Toast notifications for user feedback
+- Progress bars for file processing
+- Interactive charts and graphs
+```
+
+## Innovative Feature Implementations
+
+### 1. Voice-Powered Interface
+```
+- Voice commands for navigation
+- Audio playback of report summaries
+- Voice-activated medicine reminders
+- Multilingual voice support
+```
+
+### 2. AI-Powered Insights
+```
+- Trend analysis with simple explanations
+- Health risk predictions
+- Personalized health tips
+- Medication interaction warnings
+```
+
+### 3. Rural/Elderly Friendly Features
+```
+- Large, clear buttons and text
+- Simple navigation flow
+- Offline capability for basic features
+- WhatsApp integration for sharing
+```
+
+## Technical Implementation Details
+
+### Database Schema (Supabase)
+```sql
+- users (id, email, profile_data)
+- reports (id, user_id, file_url, extracted_data, analysis)
+- medications (id, user_id, name, dosage, schedule)
+- reminders (id, user_id, type, schedule, active)
+- health_timeline (id, user_id, date, metrics, notes)
+```
+
+### API Endpoints Structure
+```
+/auth/* - Authentication routes
+/upload - File upload and processing
+/reports/* - Report management
+/medications/* - Medication tracking
+/reminders/* - Reminder system
+/analysis/* - Health analysis endpoints
+```
+
+### Security Requirements
+```
+- HTTPS enforcement
+- Data encryption at rest
+- Secure file upload validation
+- User data privacy compliance
+- Session management
+- Input sanitization
+```
+
+## Deployment Instructions
+```
+1. Set up Supabase project with authentication
+2. Configure environment variables
+3. Implement responsive React components
+4. Integrate OCR processing pipeline
+5. Set up notification systems
+6. Test across different devices
+7. Deploy to Replit with custom domain
+```
+
+## Success Criteria
+- ✅ Fully responsive across all devices
+- ✅ Fast loading times (<3 seconds)
+- ✅ Intuitive user flow with minimal clicks
+- ✅ Accurate OCR processing (>90% accuracy)
+- ✅ Secure authentication and data handling
+- ✅ Accessible to users with disabilities
+- ✅ Multilingual support working
+- ✅ All reminder systems functional
+
+## Additional Notes
+- Focus on user experience over complex features
+- Ensure medical accuracy in explanations
+- Include comprehensive error handling
+- Add loading states for all async operations
+- Implement proper form validation
+- Create clear onboarding flow for new users
+- Test with real medical documents
+- Include help/tutorial section
+
+**Goal**: Create a production-ready medical report interpretation platform that genuinely helps patients understand their health data and manage their healthcare more effectively.
