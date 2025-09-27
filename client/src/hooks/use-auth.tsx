@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [, setLocation] = useLocation();
 
   // Check current auth status
-  const { data: user, isLoading } = useQuery({
+  const { data: user, isLoading } = useQuery<User | null>({
     queryKey: ["/api/auth/me"],
     retry: false,
   });

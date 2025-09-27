@@ -26,9 +26,14 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Ensure SESSION_SECRET is set for security
+  if (!process.env.SESSION_SECRET) {
+    throw new Error('SESSION_SECRET environment variable is required for secure session management');
+  }
+
   // Session middleware
   app.use(session({
-    secret: process.env.SESSION_SECRET || 'default-secret',
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
