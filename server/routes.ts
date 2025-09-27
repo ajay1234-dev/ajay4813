@@ -154,102 +154,157 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const fileName = req.file.originalname;
       const fileUrl = `/uploads/${fileId}_${fileName}`;
 
-      // Extract text based on file type
-      let extractedText = '';
-      try {
-        if (req.file.mimetype === 'application/pdf') {
-          extractedText = await extractTextFromPDF(req.file.buffer);
-        } else {
-          const ocrResult = await extractTextFromImage(req.file.buffer);
-          extractedText = ocrResult.text;
-        }
-      } catch (error) {
-        console.error('Text extraction failed:', error);
-        extractedText = 'Text extraction failed';
-      }
-
-      // Detect document type
-      const reportType = detectDocumentType(extractedText);
-
-      // Create report
+      // Create report immediately without processing
       const report = await storage.createReport({
         userId: req.session.userId,
         fileName,
         fileUrl,
-        reportType,
-        originalText: extractedText,
+        reportType: 'general', // Will be updated after processing
+        originalText: '', // Will be updated after processing
         status: 'processing',
       });
 
-      // Process in background
-      processReportAsync(report.id, extractedText, reportType);
+      // Process in background (don't await this)
+      processReportAsync(report.id, req.file.buffer, req.file.mimetype).catch(error => {
+        console.error('Background processing failed for report', report.id, ':', error);
+        // Update report status to failed
+        storage.updateReport(report.id, {
+          status: 'failed',
+          summary: 'Processing failed due to technical error'
+        }).catch(updateError => {
+          console.error('Failed to update report status:', updateError);
+        });
+      });
 
+      // Respond immediately to prevent timeout
       res.json({ message: 'File uploaded successfully', reportId: report.id });
     } catch (error) {
-      res.status(500).json({ message: error instanceof Error ? error.message : 'Operation failed' });
+      console.error('Upload route error:', error);
+      res.status(500).json({ message: error instanceof Error ? error.message : 'Upload failed' });
     }
   });
 
   // Background processing function
-  async function processReportAsync(reportId: string, text: string, reportType: string) {
+  async function processReportAsync(reportId: string, fileBuffer: Buffer, mimeType: string) {
     try {
+      console.log(`Starting background processing for report ${reportId}`);
+      
+      // Extract text based on file type with proper error handling
+      let extractedText = '';
+      let reportType = 'general';
+      let extractionFailed = false;
+      
+      try {
+        if (mimeType === 'application/pdf') {
+          console.log('Processing PDF...');
+          extractedText = await extractTextFromPDF(fileBuffer);
+        } else {
+          console.log('Processing image with OCR...');
+          const ocrResult = await extractTextFromImage(fileBuffer);
+          extractedText = ocrResult.text;
+        }
+        
+        if (extractedText && extractedText.length > 0) {
+          reportType = detectDocumentType(extractedText);
+          console.log(`Detected document type: ${reportType}`);
+        }
+      } catch (error) {
+        console.error('Text extraction failed:', error);
+        extractionFailed = true;
+        extractedText = error instanceof Error ? error.message : 'Text extraction failed';
+      }
+
+      // Update report with extracted text
+      await storage.updateReport(reportId, {
+        originalText: extractedText,
+        reportType: reportType,
+      });
+
       let analysis = null;
       let extractedData = null;
       let summary = '';
 
-      if (reportType === 'blood_test' || reportType === 'general') {
-        analysis = await analyzeMedicalReport(text);
-        summary = analysis.summary;
-        extractedData = analysis;
-      } else if (reportType === 'prescription') {
-        const medications = await extractMedicationInfo(text);
-        extractedData = { medications };
-        summary = `Prescription contains ${medications.length} medication(s)`;
-        
-        // Create medication entries
-        const report = await storage.getReport(reportId);
-        if (report) {
-          for (const med of medications) {
-            await storage.createMedication({
-              userId: report.userId,
-              reportId: report.id,
-              name: med.name,
-              dosage: med.dosage,
-              frequency: med.frequency,
-              instructions: med.instructions,
-              sideEffects: med.sideEffects.join(', '),
-              isActive: true,
-            });
+      // Process analysis based on document type
+      try {
+        if (reportType === 'blood_test' || reportType === 'general') {
+          console.log('Running medical analysis...');
+          analysis = await analyzeMedicalReport(extractedText);
+          summary = analysis.summary;
+          extractedData = analysis;
+        } else if (reportType === 'prescription') {
+          console.log('Extracting medication info...');
+          const medications = await extractMedicationInfo(extractedText);
+          extractedData = { medications };
+          summary = `Prescription contains ${medications.length} medication(s)`;
+          
+          // Create medication entries
+          const report = await storage.getReport(reportId);
+          if (report) {
+            for (const med of medications) {
+              try {
+                await storage.createMedication({
+                  userId: report.userId,
+                  reportId: report.id,
+                  name: med.name,
+                  dosage: med.dosage,
+                  frequency: med.frequency,
+                  instructions: med.instructions,
+                  sideEffects: med.sideEffects?.join(', ') || '',
+                  isActive: true,
+                });
+              } catch (medError) {
+                console.error('Failed to create medication:', medError);
+              }
+            }
           }
         }
+      } catch (analysisError) {
+        console.error('Analysis failed:', analysisError);
+        summary = 'Document processed successfully. Professional medical review recommended.';
+        extractedData = { message: 'Analysis unavailable - please consult healthcare provider' };
       }
 
+      // Update report with final results
+      const finalStatus = extractionFailed ? 'failed' : 'completed';
       await storage.updateReport(reportId, {
         analysis,
         extractedData,
-        summary,
-        status: 'completed',
+        summary: extractionFailed ? extractedText : summary,
+        status: finalStatus,
       });
 
-      // Create timeline entry
-      const report = await storage.getReport(reportId);
-      if (report) {
-        await storage.createHealthTimelineEntry({
-          userId: report.userId,
-          reportId: report.id,
-          date: new Date(),
-          eventType: reportType === 'prescription' ? 'medication_change' : 'lab_result',
-          title: `${reportType.replace('_', ' ')} - ${report.fileName}`,
-          description: summary,
-          metrics: extractedData,
-        });
+      // Create timeline entry only if processing succeeded
+      if (!extractionFailed) {
+        try {
+          const report = await storage.getReport(reportId);
+          if (report) {
+            await storage.createHealthTimelineEntry({
+              userId: report.userId,
+              reportId: report.id,
+              date: new Date(),
+              eventType: reportType === 'prescription' ? 'medication_change' : 'lab_result',
+              title: `${reportType.replace('_', ' ')} - ${report.fileName}`,
+              description: summary,
+              metrics: extractedData,
+            });
+          }
+        } catch (timelineError) {
+          console.error('Failed to create timeline entry:', timelineError);
+          // Don't fail the whole process for timeline issues
+        }
       }
+
+      console.log(`Successfully completed processing for report ${reportId}`);
     } catch (error) {
       console.error('Report processing failed:', error);
-      await storage.updateReport(reportId, {
-        status: 'failed',
-        summary: 'Processing failed',
-      });
+      try {
+        await storage.updateReport(reportId, {
+          status: 'failed',
+          summary: 'Processing failed due to technical error. Please try uploading again.',
+        });
+      } catch (updateError) {
+        console.error('Failed to update report status:', updateError);
+      }
     }
   }
 

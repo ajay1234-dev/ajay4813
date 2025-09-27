@@ -1,0 +1,22 @@
+MEDICAL LABORATORY REPORT
+
+Patient: John Doe
+Date: December 15, 2024
+Doctor: Dr. Smith
+
+BLOOD TEST RESULTS:
+- Glucose: 95 mg/dL (Normal: 70-100)
+- Cholesterol: 180 mg/dL (Normal: <200)
+- Hemoglobin: 14.2 g/dL (Normal: 13.5-17.5)
+- White Blood Cells: 7,500/μL (Normal: 4,500-11,000)
+
+FINDINGS:
+All values within normal range.
+Patient shows good overall health markers.
+
+RECOMMENDATIONS:
+- Continue current diet and exercise routine
+- Follow up in 6 months for routine monitoring
+- Contact physician if any concerns arise
+
+This is a sample medical report for testing purposes.

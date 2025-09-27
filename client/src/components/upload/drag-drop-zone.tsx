@@ -142,7 +142,7 @@ export default function DragDropZone({ onUploadProgress, uploadProgress }: DragD
     },
     maxSize: 10 * 1024 * 1024, // 10MB
     multiple: true,
-    noClick: true,
+    noClick: false, // Allow clicking on the upload zone
   });
 
   const removeFile = (fileToRemove: File) => {
