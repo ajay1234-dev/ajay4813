@@ -1,11 +1,13 @@
 import OpenAI from "openai";
 
-const openai = new OpenAI({ 
-  apiKey: process.env.OPENAI_API_KEY
-});
+let openai: OpenAI | null = null;
 
-// Check if OpenAI API key is configured
-if (!process.env.OPENAI_API_KEY) {
+// Initialize OpenAI client only if API key is available
+if (process.env.OPENAI_API_KEY) {
+  openai = new OpenAI({ 
+    apiKey: process.env.OPENAI_API_KEY
+  });
+} else {
   console.warn('Warning: OPENAI_API_KEY not set - AI analysis will be disabled');
 }
 
@@ -35,7 +37,7 @@ export interface MedicationInfo {
 
 export async function analyzeMedicalReport(reportText: string): Promise<MedicalAnalysis> {
   // Fallback analysis if OpenAI is not available
-  if (!process.env.OPENAI_API_KEY) {
+  if (!openai) {
     return createFallbackAnalysis(reportText);
   }
 
