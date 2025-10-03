@@ -85,11 +85,30 @@ export async function extractTextFromImage(imageBuffer: Buffer): Promise<OCRResu
 export async function extractTextFromPDF(pdfBuffer: Buffer): Promise<string> {
   try {
     console.log('Parsing PDF... Buffer size:', pdfBuffer.length);
-    const pdfParse = await import('pdf-parse');
-    console.log('pdf-parse module loaded successfully');
-    const data = await pdfParse.default(pdfBuffer);
-    console.log('PDF parsing completed successfully. Extracted text length:', data.text?.length || 0);
-    return data.text || 'No text found in PDF';
+    
+    const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
+    
+    const loadingTask = pdfjsLib.getDocument({
+      data: new Uint8Array(pdfBuffer),
+      useSystemFonts: true,
+    });
+    
+    const pdf = await loadingTask.promise;
+    console.log(`PDF loaded successfully. Pages: ${pdf.numPages}`);
+    
+    let fullText = '';
+    
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items
+        .map((item: any) => item.str)
+        .join(' ');
+      fullText += pageText + '\n';
+    }
+    
+    console.log('PDF parsing completed successfully. Extracted text length:', fullText.length);
+    return fullText.trim() || 'No text found in PDF';
   } catch (error) {
     console.error('PDF text extraction failed. Error details:', error);
     console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
