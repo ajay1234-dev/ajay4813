@@ -329,6 +329,114 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/reports/:id/download', requireAuth, async (req, res) => {
+    try {
+      const report = await storage.getReport(req.params.id);
+      if (!report || report.userId !== req.session.userId) {
+        return res.status(404).json({ message: 'Report not found' });
+      }
+
+      const user = await storage.getUser(req.session.userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Generate formatted report content
+      let content = `MEDICAL REPORT ANALYSIS\n`;
+      content += `${'='.repeat(80)}\n\n`;
+      content += `Patient: ${user.firstName} ${user.lastName}\n`;
+      content += `Report Date: ${new Date(report.createdAt).toLocaleDateString()}\n`;
+      content += `Report Type: ${report.reportType.replace('_', ' ').toUpperCase()}\n`;
+      content += `File Name: ${report.fileName}\n`;
+      content += `Status: ${report.status.toUpperCase()}\n\n`;
+      content += `${'-'.repeat(80)}\n\n`;
+
+      if (report.summary) {
+        content += `SUMMARY\n`;
+        content += `${'-'.repeat(80)}\n`;
+        content += `${report.summary}\n\n`;
+      }
+
+      if (report.analysis) {
+        const analysis = report.analysis as any;
+        
+        if (analysis.keyFindings && Array.isArray(analysis.keyFindings)) {
+          content += `KEY FINDINGS\n`;
+          content += `${'-'.repeat(80)}\n`;
+          analysis.keyFindings.forEach((finding: any, index: number) => {
+            content += `\n${index + 1}. ${finding.parameter}\n`;
+            content += `   Value: ${finding.value}\n`;
+            content += `   Normal Range: ${finding.normalRange}\n`;
+            content += `   Status: ${finding.status.toUpperCase()}\n`;
+            content += `   Explanation: ${finding.explanation}\n`;
+          });
+          content += `\n`;
+        }
+
+        if (analysis.recommendations && Array.isArray(analysis.recommendations)) {
+          content += `\nRECOMMENDATIONS\n`;
+          content += `${'-'.repeat(80)}\n`;
+          analysis.recommendations.forEach((rec: string, index: number) => {
+            content += `${index + 1}. ${rec}\n`;
+          });
+          content += `\n`;
+        }
+
+        if (analysis.nextSteps && Array.isArray(analysis.nextSteps)) {
+          content += `\nNEXT STEPS\n`;
+          content += `${'-'.repeat(80)}\n`;
+          analysis.nextSteps.forEach((step: string, index: number) => {
+            content += `${index + 1}. ${step}\n`;
+          });
+          content += `\n`;
+        }
+
+        if (analysis.riskLevel) {
+          content += `\nRISK LEVEL: ${analysis.riskLevel.toUpperCase()}\n\n`;
+        }
+      }
+
+      if (report.extractedData) {
+        const extractedData = report.extractedData as any;
+        if (extractedData.medications && Array.isArray(extractedData.medications)) {
+          content += `MEDICATIONS\n`;
+          content += `${'-'.repeat(80)}\n`;
+          extractedData.medications.forEach((med: any, index: number) => {
+            content += `\n${index + 1}. ${med.name}\n`;
+            content += `   Dosage: ${med.dosage}\n`;
+            content += `   Frequency: ${med.frequency}\n`;
+            content += `   Instructions: ${med.instructions}\n`;
+            if (med.sideEffects && med.sideEffects.length > 0) {
+              content += `   Side Effects: ${med.sideEffects.join(', ')}\n`;
+            }
+          });
+          content += `\n`;
+        }
+      }
+
+      if (report.originalText && report.originalText.length > 0 && report.originalText !== 'No text detected') {
+        content += `\nORIGINAL TEXT\n`;
+        content += `${'-'.repeat(80)}\n`;
+        content += `${report.originalText}\n\n`;
+      }
+
+      content += `${'-'.repeat(80)}\n`;
+      content += `\nDISCLAIMER: This analysis is for informational purposes only and is not a\n`;
+      content += `substitute for professional medical advice, diagnosis, or treatment. Always\n`;
+      content += `consult with your healthcare provider regarding any medical concerns.\n\n`;
+      content += `Generated on: ${new Date().toLocaleString()}\n`;
+
+      // Set headers for file download
+      const fileName = `medical_report_${report.id}_${new Date().toISOString().split('T')[0]}.txt`;
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+      res.send(content);
+    } catch (error) {
+      console.error('Download error:', error);
+      res.status(500).json({ message: error instanceof Error ? error.message : 'Download failed' });
+    }
+  });
+
   // Medications routes
   app.get('/api/medications', requireAuth, async (req, res) => {
     try {

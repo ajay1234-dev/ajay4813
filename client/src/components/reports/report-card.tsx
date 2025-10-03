@@ -23,6 +23,31 @@ export default function ReportCard({ report }: ReportCardProps) {
     }
   };
 
+  const handleDownload = async () => {
+    try {
+      const response = await fetch(`/api/reports/${report.id}/download`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Download failed');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `medical_report_${report.id}_${new Date().toISOString().split('T')[0]}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Download failed:', error);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
@@ -80,7 +105,9 @@ export default function ReportCard({ report }: ReportCardProps) {
             <Button
               variant="ghost"
               size="sm"
-              title="Download report"
+              onClick={handleDownload}
+              disabled={report.status !== 'completed'}
+              title={report.status === 'completed' ? 'Download report' : 'Report must be completed to download'}
               data-testid={`download-${report.id}`}
             >
               <Download className="h-4 w-4" />
