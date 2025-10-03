@@ -84,14 +84,15 @@ export async function extractTextFromImage(imageBuffer: Buffer): Promise<OCRResu
 
 export async function extractTextFromPDF(pdfBuffer: Buffer): Promise<string> {
   try {
-    console.log('Parsing PDF...');
+    console.log('Parsing PDF... Buffer size:', pdfBuffer.length);
     const pdfParse = await import('pdf-parse');
+    console.log('pdf-parse module loaded successfully');
     const data = await pdfParse.default(pdfBuffer);
-    console.log('PDF parsing completed successfully');
+    console.log('PDF parsing completed successfully. Extracted text length:', data.text?.length || 0);
     return data.text || 'No text found in PDF';
   } catch (error) {
-    console.error('PDF text extraction failed:', error);
-    // Throw error to be handled by calling function
+    console.error('PDF text extraction failed. Error details:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     throw new Error(`PDF text extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
