@@ -39,7 +39,7 @@ The system uses PostgreSQL with the following key tables:
 - **Database Security**: Prepared statements through Drizzle ORM prevent SQL injection
 
 ### AI Integration
-- **OpenAI Integration**: GPT models for medical report analysis and plain language generation
+- **Gemini Integration**: Google's Gemini 2.5 models for medical report analysis and plain language generation
 - **Medical Analysis Pipeline**: Structured extraction of key medical parameters with normal/abnormal status detection
 - **Translation Services**: Multi-language support for medical explanations
 
@@ -56,7 +56,7 @@ The system uses PostgreSQL with the following key tables:
 - **Authentication**: bcrypt for password hashing, express-session for session management
 
 ### AI & Processing Services
-- **OpenAI API**: GPT models for medical report analysis and natural language generation
+- **Google Gemini API**: Gemini 2.5 models for medical report analysis and natural language generation
 - **Tesseract.js**: Client and server-side OCR for document text extraction
 - **PDF Processing**: pdf-parse for PDF text extraction
 

@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertUserSchema, insertReportSchema, insertMedicationSchema, insertReminderSchema } from "@shared/schema";
-import { analyzeMedicalReport, extractMedicationInfo, generateHealthSummary, translateMedicalText } from "./services/openai";
+import { analyzeMedicalReport, extractMedicationInfo, generateHealthSummary, translateMedicalText } from "./services/gemini";
 import { extractTextFromImage, extractTextFromPDF, detectDocumentType } from "./services/ocr";
 import bcrypt from "bcrypt";
 import session from "express-session";
