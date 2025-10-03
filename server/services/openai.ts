@@ -118,7 +118,7 @@ function createFallbackAnalysis(reportText: string): MedicalAnalysis {
 
 export async function extractMedicationInfo(prescriptionText: string): Promise<MedicationInfo[]> {
   // Fallback analysis if OpenAI is not available
-  if (!process.env.OPENAI_API_KEY) {
+  if (!openai) {
     return createFallbackMedications(prescriptionText);
   }
 
@@ -195,6 +195,10 @@ function createFallbackMedications(prescriptionText: string): MedicationInfo[] {
 }
 
 export async function generateHealthSummary(reports: any[], medications: any[]): Promise<string> {
+  if (!openai) {
+    return `Health Summary\n\nRecent Reports: ${reports.length}\nCurrent Medications: ${medications.length}\n\nNote: AI-powered summaries require OpenAI API key configuration.`;
+  }
+
   try {
     const prompt = `
     Generate a comprehensive health summary based on the following medical reports and current medications.
@@ -226,11 +230,17 @@ export async function generateHealthSummary(reports: any[], medications: any[]):
 
     return response.choices[0].message.content || '';
   } catch (error) {
-    throw new Error(`Failed to generate health summary: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    throw new Error(`Failed to generate health summary: ${errorMessage}`);
   }
 }
 
 export async function translateMedicalText(text: string, targetLanguage: string): Promise<string> {
+  if (!openai) {
+    console.warn('Translation requires OpenAI API key');
+    return text;
+  }
+
   try {
     const prompt = `
     Translate the following medical text to ${targetLanguage}.
@@ -256,7 +266,8 @@ export async function translateMedicalText(text: string, targetLanguage: string)
 
     return response.choices[0].message.content || text;
   } catch (error) {
-    console.error(`Translation failed: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`Translation failed: ${errorMessage}`);
     return text; // Return original text if translation fails
   }
 }
