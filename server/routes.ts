@@ -224,9 +224,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let extractedData = null;
       let summary = '';
 
+      // Check if we have sufficient text content for analysis
+      const hasMinimalContent = extractedText && extractedText.length > 50 && extractedText !== 'No text detected' && extractedText !== 'No text found in PDF';
+      
       // Process analysis based on document type
       try {
-        if (reportType === 'blood_test' || reportType === 'general') {
+        if (!hasMinimalContent) {
+          console.log('Insufficient text content extracted. Document may be low quality or corrupted.');
+          summary = '⚠️ Document uploaded but OCR could not extract readable text. This may be due to:\n\n' +
+                    '• Low image quality or resolution\n' +
+                    '• Blurry or unclear text\n' +
+                    '• Handwritten content (not supported)\n' +
+                    '• Heavy shadows or glare on the document\n\n' +
+                    'Please try:\n' +
+                    '1. Re-scanning with higher quality (at least 300 DPI)\n' +
+                    '2. Ensuring good lighting without shadows\n' +
+                    '3. Taking a clear, straight photo of the document\n' +
+                    '4. Using a PDF with selectable text instead of a scan';
+          extractedData = { 
+            message: 'Text extraction failed',
+            extractedLength: extractedText?.length || 0,
+            suggestion: 'Upload a higher quality scan or PDF with selectable text'
+          };
+        } else if (reportType === 'blood_test' || reportType === 'general') {
           console.log('Running medical analysis...');
           analysis = await analyzeMedicalReport(extractedText);
           summary = analysis.summary;

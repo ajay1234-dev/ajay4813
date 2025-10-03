@@ -107,8 +107,47 @@ export async function extractTextFromPDF(pdfBuffer: Buffer): Promise<string> {
       fullText += pageText + '\n';
     }
     
-    console.log('PDF parsing completed successfully. Extracted text length:', fullText.length);
-    return fullText.trim() || 'No text found in PDF';
+    const extractedText = fullText.trim();
+    console.log('PDF parsing completed successfully. Extracted text length:', extractedText.length);
+    
+    // If text extraction yielded minimal content (less than 50 characters), use OCR as fallback
+    if (extractedText.length < 50) {
+      console.log('PDF has minimal text content. Falling back to OCR...');
+      
+      try {
+        // Use pdf-to-png to convert PDF pages to images for OCR
+        const { pdfToPng } = await import('pdf-to-png-converter');
+        
+        console.log('Converting PDF to images...');
+        const pngPages = await pdfToPng(pdfBuffer, {
+          outputFolder: '/tmp',
+          viewportScale: 2.0, // Higher resolution for better OCR
+        });
+        
+        let ocrText = '';
+        
+        // Process each page with OCR
+        for (let i = 0; i < Math.min(pngPages.length, 10); i++) { // Limit to 10 pages
+          const page = pngPages[i];
+          console.log(`Running OCR on page ${i + 1}...`);
+          
+          const ocrResult = await extractTextFromImage(page.content);
+          if (ocrResult.text && ocrResult.text.length > 0) {
+            ocrText += ocrResult.text + '\n\n';
+          }
+        }
+        
+        if (ocrText.length > extractedText.length) {
+          console.log(`OCR extracted ${ocrText.length} characters vs ${extractedText.length} from direct extraction`);
+          return ocrText.trim();
+        }
+      } catch (ocrError) {
+        console.error('OCR fallback failed:', ocrError);
+        // Continue with original extracted text
+      }
+    }
+    
+    return extractedText || 'No text found in PDF';
   } catch (error) {
     console.error('PDF text extraction failed. Error details:', error);
     console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
