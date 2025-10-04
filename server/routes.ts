@@ -61,6 +61,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'User already exists' });
       }
 
+      if (!userData.password) {
+        return res.status(400).json({ message: 'Password is required for email registration' });
+      }
+
       // Hash password
       const hashedPassword = await bcrypt.hash(userData.password, 10);
       
@@ -94,6 +98,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: 'Invalid credentials' });
       }
 
+      if (!user.password) {
+        return res.status(401).json({ message: 'Please use Google sign-in for this account' });
+      }
+
       const isValidPassword = await bcrypt.compare(password, user.password);
       if (!isValidPassword) {
         return res.status(401).json({ message: 'Invalid credentials' });
@@ -122,6 +130,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json({ message: 'Logout successful' });
     });
+  });
+
+  app.post('/api/auth/firebase-login', async (req, res) => {
+    try {
+      const { firebaseUid, email, firstName, lastName } = req.body;
+      
+      if (!firebaseUid || !email || !firstName || !lastName) {
+        return res.status(400).json({ message: 'Missing required fields' });
+      }
+
+      let user = await storage.getUserByEmail(email);
+      
+      if (!user) {
+        user = await storage.createUser({
+          email,
+          firstName,
+          lastName,
+          authProvider: 'google',
+          firebaseUid,
+        });
+      } else if (user.firebaseUid !== firebaseUid) {
+        await storage.updateUser(user.id, {
+          firebaseUid,
+          authProvider: 'google',
+        });
+      }
+
+      req.session.userId = user.id;
+      
+      res.json({ 
+        message: 'Login successful', 
+        user: { 
+          id: user.id, 
+          email: user.email, 
+          firstName: user.firstName, 
+          lastName: user.lastName 
+        } 
+      });
+    } catch (error) {
+      res.status(500).json({ message: error instanceof Error ? error.message : 'Operation failed' });
+    }
   });
 
   app.get('/api/auth/me', requireAuth, async (req, res) => {
