@@ -1,5 +1,5 @@
-import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { initializeApp, type FirebaseApp } from "firebase/app";
+import { getAuth, GoogleAuthProvider, type Auth } from "firebase/auth";
 
 // Firebase integration - configuration setup
 const firebaseConfig = {
@@ -10,9 +10,9 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-let app;
-let auth;
-let googleProvider;
+let app: FirebaseApp | undefined;
+let auth: Auth | undefined;
+let googleProvider: GoogleAuthProvider | undefined;
 
 try {
   app = initializeApp(firebaseConfig);

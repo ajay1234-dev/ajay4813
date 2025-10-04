@@ -15,6 +15,7 @@ interface AuthContext {
   user: User | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  loginWithFirebase: (firebaseUid: string, email: string, firstName: string, lastName: string) => Promise<void>;
   register: (userData: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -48,6 +49,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
+  const firebaseLoginMutation = useMutation({
+    mutationFn: async (data: { firebaseUid: string; email: string; firstName: string; lastName: string }) => {
+      const response = await apiRequest("POST", "/api/auth/firebase-login", data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      setLocation("/");
+    },
+  });
+
   const registerMutation = useMutation({
     mutationFn: async (userData: RegisterData) => {
       const response = await apiRequest("POST", "/api/auth/register", userData);
@@ -73,6 +85,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await loginMutation.mutateAsync({ email, password });
   };
 
+  const loginWithFirebase = async (firebaseUid: string, email: string, firstName: string, lastName: string) => {
+    await firebaseLoginMutation.mutateAsync({ firebaseUid, email, firstName, lastName });
+  };
+
   const register = async (userData: RegisterData) => {
     await registerMutation.mutateAsync(userData);
   };
@@ -91,9 +107,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider
       value={{
-        user,
+        user: user ?? null,
         isLoading,
         login,
+        loginWithFirebase,
         register,
         logout,
       }}
