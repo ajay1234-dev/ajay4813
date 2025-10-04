@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { insertUserSchema, insertReportSchema, insertMedicationSchema, insertReminderSchema } from "@shared/schema";
 import { analyzeMedicalReport, extractMedicationInfo, generateHealthSummary, translateMedicalText } from "./services/gemini";
 import { extractTextFromImage, extractTextFromPDF, detectDocumentType } from "./services/ocr";
+import { verifyFirebaseToken } from "./services/firebase-verify";
 import bcrypt from "bcrypt";
 import session from "express-session";
 import multer from "multer";
@@ -134,25 +135,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/auth/firebase-login', async (req, res) => {
     try {
-      const { firebaseUid, email, firstName, lastName } = req.body;
+      const { idToken } = req.body;
       
-      if (!firebaseUid || !email || !firstName || !lastName) {
-        return res.status(400).json({ message: 'Missing required fields' });
+      if (!idToken) {
+        return res.status(400).json({ message: 'ID token is required' });
       }
 
-      let user = await storage.getUserByEmail(email);
+      // Verify Firebase ID token
+      const verifiedToken = await verifyFirebaseToken(idToken);
+      
+      if (!verifiedToken.email) {
+        return res.status(400).json({ message: 'Email not found in Firebase token' });
+      }
+
+      // Parse name from Firebase token
+      const displayName = verifiedToken.name || '';
+      const nameParts = displayName.split(' ');
+      const firstName = nameParts[0] || 'User';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      let user = await storage.getUserByEmail(verifiedToken.email);
       
       if (!user) {
         user = await storage.createUser({
-          email,
+          email: verifiedToken.email,
           firstName,
           lastName,
           authProvider: 'google',
-          firebaseUid,
+          firebaseUid: verifiedToken.uid,
         });
-      } else if (user.firebaseUid !== firebaseUid) {
+      } else if (user.firebaseUid !== verifiedToken.uid) {
         await storage.updateUser(user.id, {
-          firebaseUid,
+          firebaseUid: verifiedToken.uid,
           authProvider: 'google',
         });
       }
@@ -169,7 +183,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } 
       });
     } catch (error) {
-      res.status(500).json({ message: error instanceof Error ? error.message : 'Operation failed' });
+      console.error('Firebase login error:', error);
+      res.status(401).json({ message: 'Authentication failed. Please try again.' });
     }
   });
 

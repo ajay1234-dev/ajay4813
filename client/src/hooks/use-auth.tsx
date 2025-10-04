@@ -15,7 +15,7 @@ interface AuthContext {
   user: User | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  loginWithFirebase: (firebaseUid: string, email: string, firstName: string, lastName: string) => Promise<void>;
+  loginWithFirebase: (idToken: string) => Promise<void>;
   register: (userData: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -50,8 +50,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   const firebaseLoginMutation = useMutation({
-    mutationFn: async (data: { firebaseUid: string; email: string; firstName: string; lastName: string }) => {
-      const response = await apiRequest("POST", "/api/auth/firebase-login", data);
+    mutationFn: async (idToken: string) => {
+      const response = await apiRequest("POST", "/api/auth/firebase-login", { idToken });
       return response.json();
     },
     onSuccess: () => {
@@ -85,8 +85,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await loginMutation.mutateAsync({ email, password });
   };
 
-  const loginWithFirebase = async (firebaseUid: string, email: string, firstName: string, lastName: string) => {
-    await firebaseLoginMutation.mutateAsync({ firebaseUid, email, firstName, lastName });
+  const loginWithFirebase = async (idToken: string) => {
+    await firebaseLoginMutation.mutateAsync(idToken);
   };
 
   const register = async (userData: RegisterData) => {

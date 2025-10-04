@@ -27,17 +27,11 @@ export default function Login() {
         const result = await getRedirectResult(auth);
         if (result?.user) {
           setIsGoogleLoading(true);
-          const displayName = result.user.displayName || "";
-          const nameParts = displayName.split(" ");
-          const firstName = nameParts[0] || "";
-          const lastName = nameParts.slice(1).join(" ") || "";
+          
+          // Get ID token from Firebase
+          const idToken = await result.user.getIdToken();
 
-          await loginWithFirebase(
-            result.user.uid,
-            result.user.email || "",
-            firstName,
-            lastName
-          );
+          await loginWithFirebase(idToken);
 
           toast({
             title: "Welcome!",
