@@ -26,7 +26,7 @@ Preferred communication style: Simple, everyday language.
 
 ### Database Design
 The system uses PostgreSQL with the following key tables:
-- **Users**: Store user profiles with authentication data and preferences
+- **Users**: Store user profiles with authentication data, preferences, and support for multiple auth providers (email/password, Google)
 - **Reports**: Medical documents with OCR text, AI analysis, and processing status
 - **Medications**: Prescription tracking with dosage, frequency, and active status
 - **Reminders**: Medication and appointment reminders with scheduling
@@ -34,7 +34,10 @@ The system uses PostgreSQL with the following key tables:
 - **Shared Reports**: Secure sharing mechanism for healthcare providers
 
 ### Authentication & Security
-- **Session-based Authentication**: Server-side sessions with bcrypt password hashing
+- **Dual Authentication Methods**: Support for both email/password and Firebase/Google authentication
+- **Firebase Integration**: Google Sign-In with secure server-side ID token verification
+- **Session-based Authentication**: Server-side sessions with bcrypt password hashing for email/password users
+- **Token Verification**: JWT-based Firebase ID token verification with Google public key validation
 - **File Upload Security**: Type validation and size limits for uploaded documents
 - **Database Security**: Prepared statements through Drizzle ORM prevent SQL injection
 
@@ -73,6 +76,20 @@ The system uses PostgreSQL with the following key tables:
 - **Development**: tsx for TypeScript execution, esbuild for production builds
 
 ### Cloud Services (Configured)
-- **Supabase**: Prepared for authentication and storage services
+- **Firebase Authentication**: Google Sign-In integration with server-side token verification
+- **Supabase**: Prepared for additional authentication and storage services
 - **File Storage**: Ready for cloud storage integration for uploaded documents
 - **Deployment**: Configured for production deployment with environment-based configuration
+
+## Recent Changes (October 2025)
+
+### Firebase Google Authentication
+- **Added Google Sign-In**: Patients can now sign in using their Google accounts for easier access
+- **Secure Token Verification**: Server-side Firebase ID token verification using JWT and Google public keys
+- **Dual Auth Support**: Users can choose between traditional email/password or Google sign-in
+- **Database Schema Updates**: Added support for multiple authentication providers with optional password field
+- **Security Features**: 
+  - RSA signature verification with Google's public keys
+  - Audience and issuer claim validation
+  - Token expiration checks
+  - Sanitized error messages to prevent information leakage
