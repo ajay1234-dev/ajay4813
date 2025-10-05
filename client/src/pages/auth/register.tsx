@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, Loader2 } from "lucide-react";
+import { Heart, Loader2, UserIcon, Stethoscope } from "lucide-react";
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -15,6 +16,7 @@ export default function Register() {
     email: "",
     password: "",
     confirmPassword: "",
+    role: "patient",
   });
   const [isLoading, setIsLoading] = useState(false);
   const { register } = useAuth();
@@ -47,6 +49,7 @@ export default function Register() {
         lastName: formData.lastName,
         email: formData.email,
         password: formData.password,
+        role: formData.role,
       });
       
       toast({
@@ -108,6 +111,37 @@ export default function Register() {
                   data-testid="input-last-name"
                 />
               </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>I am a</Label>
+              <RadioGroup
+                value={formData.role}
+                onValueChange={(value) => setFormData({ ...formData, role: value })}
+                className="grid grid-cols-2 gap-4"
+                data-testid="role-selection"
+              >
+                <Label
+                  htmlFor="patient"
+                  className={`flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer ${
+                    formData.role === "patient" ? "border-primary" : ""
+                  }`}
+                >
+                  <RadioGroupItem value="patient" id="patient" className="sr-only" />
+                  <UserIcon className="mb-3 h-6 w-6" />
+                  <span className="text-sm font-medium">Patient</span>
+                </Label>
+                <Label
+                  htmlFor="doctor"
+                  className={`flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer ${
+                    formData.role === "doctor" ? "border-primary" : ""
+                  }`}
+                >
+                  <RadioGroupItem value="doctor" id="doctor" className="sr-only" />
+                  <Stethoscope className="mb-3 h-6 w-6" />
+                  <span className="text-sm font-medium">Doctor</span>
+                </Label>
+              </RadioGroup>
             </div>
             
             <div className="space-y-2">
