@@ -83,6 +83,20 @@ The system uses PostgreSQL with the following key tables:
 
 ## Recent Changes (October 2025)
 
+### Role-Based Access Control (Latest)
+- **User Roles**: Added support for two distinct user roles - 'patient' and 'doctor'
+- **Role Selection**: Both email/password registration and Google Sign-In flows now include role selection
+- **Doctor Dashboard**: 
+  - Dedicated dashboard for doctors showing all patients and their medical data
+  - Patient search and filtering capabilities
+  - Access to all patient reports, medications, and health timeline
+  - Real-time patient health data visualization
+- **Role-Based Navigation**: 
+  - Patients see full health management features (Upload, Reports, Medications, Timeline, Reminders, Share)
+  - Doctors see simplified navigation focused on patient overview
+- **Secure Access**: Authenticated API endpoints with role verification for doctor-specific features
+- **Database Schema**: Added 'role' column to users table with default value 'patient' for backward compatibility
+
 ### Firebase Google Authentication
 - **Added Google Sign-In**: Patients can now sign in using their Google accounts for easier access
 - **Secure Token Verification**: Server-side Firebase ID token verification using JWT and Google public keys
