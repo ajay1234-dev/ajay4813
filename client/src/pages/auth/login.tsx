@@ -37,6 +37,9 @@ export default function Login() {
             title: "Welcome!",
             description: "You have successfully signed in with Google.",
           });
+          
+          // Reset loading state after successful authentication
+          setIsGoogleLoading(false);
         }
       } catch (error) {
         console.error("Google sign-in error:", error);
@@ -86,6 +89,8 @@ export default function Login() {
     try {
       setIsGoogleLoading(true);
       await signInWithRedirect(auth, googleProvider);
+      // Note: setIsGoogleLoading(false) is not called here because the page will redirect
+      // The loading state will be reset when the user returns from Google's OAuth flow
     } catch (error) {
       console.error("Google sign-in error:", error);
       toast({
