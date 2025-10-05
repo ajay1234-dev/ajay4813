@@ -39,8 +39,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     saveUninitialized: false,
     cookie: {
       secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
+    name: 'sessionId', // Custom session name to avoid conflicts
   }));
 
   // Authentication middleware
@@ -173,6 +176,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       req.session.userId = user.id;
       
+      // Debug logging
+      console.log('Firebase login successful:', {
+        userId: user.id,
+        sessionId: req.sessionID,
+        hasSession: !!req.session
+      });
+      
       res.json({ 
         message: 'Login successful', 
         user: { 
@@ -186,6 +196,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Firebase login error:', error);
       res.status(401).json({ message: 'Authentication failed. Please try again.' });
     }
+  });
+
+  // Debug endpoint to check session state
+  app.get('/api/auth/debug', (req, res) => {
+    res.json({
+      hasSession: !!req.session,
+      userId: req.session?.userId,
+      sessionId: req.sessionID,
+      sessionData: req.session,
+      cookies: req.headers.cookie
+    });
   });
 
   app.get('/api/auth/me', requireAuth, async (req, res) => {
