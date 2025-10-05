@@ -18,6 +18,7 @@ export interface IStorage {
   // Users
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getAllPatients(): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, updates: Partial<User>): Promise<User | undefined>;
 
@@ -68,6 +69,10 @@ export class MemStorage implements IStorage {
     return Array.from(this.users.values()).find(user => user.email === email);
   }
 
+  async getAllPatients(): Promise<User[]> {
+    return Array.from(this.users.values()).filter(user => user.role === 'patient');
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
     const user: User = { 
@@ -76,9 +81,12 @@ export class MemStorage implements IStorage {
       password: insertUser.password,
       firstName: insertUser.firstName,
       lastName: insertUser.lastName,
+      role: insertUser.role || 'patient',
       dateOfBirth: insertUser.dateOfBirth || null,
       phone: insertUser.phone || null,
       language: insertUser.language || null,
+      authProvider: insertUser.authProvider || null,
+      firebaseUid: insertUser.firebaseUid || null,
       createdAt: new Date(),
       updatedAt: new Date()
     };

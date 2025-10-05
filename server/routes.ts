@@ -85,7 +85,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: user.id, 
           email: user.email, 
           firstName: user.firstName, 
-          lastName: user.lastName 
+          lastName: user.lastName,
+          role: user.role 
         } 
       });
     } catch (error) {
@@ -119,7 +120,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: user.id, 
           email: user.email, 
           firstName: user.firstName, 
-          lastName: user.lastName 
+          lastName: user.lastName,
+          role: user.role 
         } 
       });
     } catch (error) {
@@ -138,7 +140,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/auth/firebase-login', async (req, res) => {
     try {
-      const { idToken } = req.body;
+      const { idToken, role } = req.body;
       
       if (!idToken) {
         return res.status(400).json({ message: 'ID token is required' });
@@ -164,6 +166,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           email: verifiedToken.email,
           firstName,
           lastName,
+          role: role || 'patient',
           authProvider: 'google',
           firebaseUid: verifiedToken.uid,
         });
@@ -189,7 +192,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: user.id, 
           email: user.email, 
           firstName: user.firstName, 
-          lastName: user.lastName 
+          lastName: user.lastName,
+          role: user.role 
         } 
       });
     } catch (error) {
@@ -221,6 +225,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: user.email, 
         firstName: user.firstName, 
         lastName: user.lastName,
+        role: user.role,
         language: user.language 
       });
     } catch (error) {
@@ -662,6 +667,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
         activeMedications: activeMedications.length,
         pendingReminders: activeReminders.length,
         healthScore: `${healthScore}%`,
+      });
+    } catch (error) {
+      res.status(500).json({ message: error instanceof Error ? error.message : 'Operation failed' });
+    }
+  });
+
+  // Doctor dashboard routes
+  app.get('/api/doctor/patients', requireAuth, async (req, res) => {
+    try {
+      const currentUser = await storage.getUser(req.session.userId);
+      if (!currentUser || currentUser.role !== 'doctor') {
+        return res.status(403).json({ message: 'Access denied. Doctor access required.' });
+      }
+
+      const allPatients = await storage.getAllPatients();
+      res.json(allPatients);
+    } catch (error) {
+      res.status(500).json({ message: error instanceof Error ? error.message : 'Operation failed' });
+    }
+  });
+
+  app.get('/api/doctor/patient/:patientId/reports', requireAuth, async (req, res) => {
+    try {
+      const currentUser = await storage.getUser(req.session.userId);
+      if (!currentUser || currentUser.role !== 'doctor') {
+        return res.status(403).json({ message: 'Access denied. Doctor access required.' });
+      }
+
+      const reports = await storage.getUserReports(req.params.patientId);
+      const patient = await storage.getUser(req.params.patientId);
+      const medications = await storage.getUserMedications(req.params.patientId);
+      const timeline = await storage.getUserHealthTimeline(req.params.patientId);
+
+      res.json({
+        patient: patient ? {
+          id: patient.id,
+          firstName: patient.firstName,
+          lastName: patient.lastName,
+          email: patient.email,
+          dateOfBirth: patient.dateOfBirth,
+          phone: patient.phone
+        } : null,
+        reports,
+        medications,
+        timeline
       });
     } catch (error) {
       res.status(500).json({ message: error instanceof Error ? error.message : 'Operation failed' });
