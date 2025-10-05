@@ -14,6 +14,13 @@ export default function DoctorDashboard() {
 
   const { data: patients, isLoading } = useQuery<any[]>({
     queryKey: ["/api/doctor/patients"],
+    queryFn: async () => {
+      const response = await fetch('/api/doctor/patients', {
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to fetch patients');
+      return response.json();
+    },
   });
 
   const { data: patientData, isLoading: isLoadingPatientData } = useQuery({

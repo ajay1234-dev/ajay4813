@@ -22,7 +22,7 @@ interface SidebarProps {
   onClose: () => void;
 }
 
-const navigation = [
+const patientNavigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Upload Report", href: "/upload", icon: Upload },
   { name: "My Reports", href: "/reports", icon: FileText },
@@ -32,10 +32,16 @@ const navigation = [
   { name: "Share with Doctor", href: "/share", icon: Share },
 ];
 
+const doctorNavigation = [
+  { name: "Dashboard", href: "/", icon: LayoutDashboard },
+];
+
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [location] = useLocation();
   const { user, logout } = useAuth();
   const isMobile = useIsMobile();
+  
+  const navigation = user?.role === 'doctor' ? doctorNavigation : patientNavigation;
 
   const handleLogout = async () => {
     try {
